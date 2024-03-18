@@ -1,0 +1,10 @@
+LICENSE
+README.md
+setup.py
+anabook/__init__.py
+anabook/eda.py
+anabook.egg-info/PKG-INFO
+anabook.egg-info/SOURCES.txt
+anabook.egg-info/dependency_links.txt
+anabook.egg-info/requires.txt
+anabook.egg-info/top_level.txt

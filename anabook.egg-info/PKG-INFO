@@ -1,0 +1,16 @@
+Metadata-Version: 2.1
+Name: anabook
+Version: 0.2
+Summary: Funciones para analisis descriptivo y utilitarios usados en el Aprendizaje Automatico
+Home-page: https://github.com/FreddyAlvarado/anabook
+Author: Freddy Alvarado
+Author-email: freddy.alvarado.b1@gmail.com
+License: MIT
+Classifier: Programming Language :: Python :: 3
+Classifier: License :: OSI Approved :: MIT License
+License-File: LICENSE
+Requires-Dist: pandas<=2.1.3
+Requires-Dist: numpy<=1.26.2
+Requires-Dist: matplotlib<=3.8.2
+Requires-Dist: seaborn<=0.13.0
+Requires-Dist: scipy<=1.11.4
