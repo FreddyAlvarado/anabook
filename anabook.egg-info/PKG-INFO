@@ -1,7 +1,7 @@
 Metadata-Version: 2.1
 Name: anabook
-Version: 0.2
-Summary: Funciones para analisis descriptivo y utilitarios usados en el Aprendizaje Automatico
+Version: 0.4
+Summary: Funciones para analisis descriptivo y utilitarios usados en el desarrollo de modelos de Aprendizaje Automatico
 Home-page: https://github.com/FreddyAlvarado/anabook
 Author: Freddy Alvarado
 Author-email: freddy.alvarado.b1@gmail.com
