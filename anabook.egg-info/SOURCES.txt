@@ -2,6 +2,7 @@ LICENSE
 README.md
 setup.py
 anabook/__init__.py
+anabook/ad.py
 anabook/eda.py
 anabook.egg-info/PKG-INFO
 anabook.egg-info/SOURCES.txt
