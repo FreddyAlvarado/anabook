@@ -7,7 +7,6 @@ import seaborn as sns
 import scipy.stats as stats
 import scipy.stats as scs
 
-
 # Funciones para el analisis exploratorio de datos
 # ------------------------------------------------
 
@@ -30,35 +29,44 @@ def graficosxy(df):
   plt.show()
   
 def histograma(df):
+  
   nrows = len(df.columns)
   npar = nrows%2
   if (npar==1):
     nrows+=1
   nrows = nrows//2
   nh = nrows * 3
+  
   # Setting up the figure and axes
   fig, axs = plt.subplots(nrows, 2, figsize=(8,nh))
   plt.subplots_adjust(hspace=0.5,wspace=0.3)
+  
   # Plotting data
   columns = df.columns
 
   for i, column in enumerate(columns):
-      ax = axs[i//2, i%2]
+               
+        ax = axs[i//2, i%2]
 
-      # Plot histogram and KDE
-      ax = sns.histplot(df[column], kde=True, ax=ax, color='skyblue', bins=15)
-      ax.lines[0].set_color('gray')
+        # Plot histogram and KDE
+        # Pasar, cuando no hay datos suficientes para el KDE
+        ax = sns.histplot(df[column], kde=True, ax=ax, color='skyblue', bins=15)
+        try:
+            ax.lines[0].set_color('gray')
+        except:
+            pass
+            
+        # Plot average
+        mean_value = df[column].mean()
+        std_value = df[column].std()
+        ax.axvline(mean_value, color='r', linestyle='--')
 
-      # Plot average
-      mean_value = df[column].mean()
-      std_value = df[column].std()
-      ax.axvline(mean_value, color='r', linestyle='--')
+        ax.set_title(f"Campo: {column} - Media: {mean_value:.2f}", fontsize=10)
 
-      ax.set_title(f"Campo: {column} - Media: {mean_value:.2f}", fontsize=10)
+        # Setting x and y labels
+        ax.set_xlabel('')
+        ax.set_ylabel("Frecuencia")
 
-      # Setting x and y labels
-      ax.set_xlabel('')
-      ax.set_ylabel("Frecuencia")
 
   plt.tight_layout()
   plt.show()
@@ -103,25 +111,59 @@ def boxplot2(df, inputs):
 
 #--------------------
 
-def describe1(dfColumn):
-  pd.set_option('display.float_format', lambda x: '%.3f' % x)
-  describe = dfColumn.describe()
-  dic_describe = describe.to_dict()
-  dk = stats.kurtosis(dfColumn)
-  ds = stats.skew(dfColumn)
-  nIdx = 0
-  for clave, valor in dic_describe.items():
-    valor['curtosis']= dk[nIdx]
-    valor['asimetria']= ds[nIdx]
-    nIdx+=1
-  dfEstat = pd.DataFrame(dic_describe)
-  dfEstat
-  return dfEstat
+def describe1(df):
+  
+  # Variables string
+  colCat = []
+  for i in df.columns:
+    if (df[i].dtype !='float64'):
+        colCat.append(i)      
+  plt.rcParams['figure.figsize'] = (8, 4) 
+
+  # Calculo del numero de filas necesario basado en el numero de columnas categoricas
+  num_col = 3  # Numero de columnas por fila en la grilla
+  num_filas = np.ceil(len(colCat) / num_col).astype(int)
+
+  # Crear una figura y un conjunto de subgraficos
+  fig, axes = plt.subplots(num_filas, num_col, figsize=(15, 5*num_filas))
+
+  # Aplanar el array de axes para facilitar su uso en un loop
+  axes = axes.flatten()
+
+  for i, columna in enumerate(colCat):
+    # Contar la frecuencia de cada categoria en la columna actual
+    conteo = df[columna].value_counts()
+    
+    # Crear el grafico de barras en el subplot correspondiente
+    conteo.plot(kind='bar', ax=axes[i])
+    axes[i].set_title(f'Grafico de barras para {columna}')
+    axes[i].set_ylabel('Frecuencia')
+    axes[i].set_xlabel('Categoria')
+    axes[i].tick_params(axis='x', rotation=45)  # Rotar las etiquetas para mejor legibilidad
+
+  # Ocultar los axes adicionales si el numero de columnas categoricas no llena la ultima fila
+  for j in range(i+1, num_filas * num_col):
+    fig.delaxes(axes[j])
+
+  plt.tight_layout()  # Ajustar automaticamente los parametros de la subtrama
+  plt.show()
+    
 
 def describe2(df):
+  pd.set_option('display.float_format', lambda x: '%.3f' % x)
   oLista = []
   oIndex = []
   nCol = 0
+  
+  # Variables float64
+  colNum = []
+  for i in df.columns:
+    if (df[i].dtype.kind in 'fi'):
+        colNum.append(i)
+        
+  # Setea solo las columnas numericas
+  df = df[colNum]
+
   dfContinuo = pd.DataFrame()
 
   for i in df.columns:
@@ -231,3 +273,55 @@ def mKOptimoMSilouette(X):
   indice_maximo = s.index(valor_maximo) + 2
   return indice_maximo
 
+
+#------------------------------------------------------------
+# ANALISIS BIVARIADO (solo variables numericas)
+#------------------------------------------------------------
+
+def bivariado(df):
+  
+  # Variables float64
+  colNum = []
+  for i in df.columns:
+    if (df[i].dtype.kind in 'fi'):
+        colNum.append(i)
+        
+  # Setea solo las columnas numericas
+  df = df[colNum]
+
+  print('  ANALISIS BIVARIADO  ')
+  print('  --------------------')
+  dispersion(df)
+  correlograma(df)
+
+def dispersion(df):
+  print('  GRAFICOS DE DISPERSION POR CADA PAR DE CAMPOS  ')
+  pairplot = sns.pairplot(df)
+  pairplot.fig.subplots_adjust(right=0.5, bottom=0.5)
+  plt.show()
+  
+def correlograma(df):
+  nrows = len(df.columns)
+  nw =0
+  nh=0
+  if (nrows<= 6 ):
+    nw = 4
+    nh = 3
+  elif (nrows <= 12):
+    nw = 8
+    nh = 6
+  else:
+    nw = 10
+    nh = 8
+
+  print('  GRAFICO CORRELOGRAMA  ')
+  plt.rcParams['figure.figsize'] = (nw, nh)
+  # Correlograma
+  df_corr = df.corr()
+  sns.heatmap(df_corr,
+            xticklabels = df_corr.columns,
+            yticklabels = df_corr.columns,
+            cmap='coolwarm',
+            annot=True)
+  plt.show()
+  #------------------------------------------------------------
