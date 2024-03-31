@@ -112,20 +112,22 @@ def boxplot2(df, inputs):
 #--------------------
 
 def describe1(df):
-  
+  print('')
+  print('GRAFICOS DE BARRAS')
+  print('')
+
   # Variables string
   colCat = []
   for i in df.columns:
     if (df[i].dtype !='float64'):
         colCat.append(i)      
-  plt.rcParams['figure.figsize'] = (8, 4) 
 
   # Calculo del numero de filas necesario basado en el numero de columnas categoricas
   num_col = 3  # Numero de columnas por fila en la grilla
   num_filas = np.ceil(len(colCat) / num_col).astype(int)
 
   # Crear una figura y un conjunto de subgraficos
-  fig, axes = plt.subplots(num_filas, num_col, figsize=(15, 5*num_filas))
+  fig, axes = plt.subplots(num_filas, num_col, figsize=(12, 3*num_filas))
 
   # Aplanar el array de axes para facilitar su uso en un loop
   axes = axes.flatten()
@@ -136,10 +138,17 @@ def describe1(df):
     
     # Crear el grafico de barras en el subplot correspondiente
     conteo.plot(kind='bar', ax=axes[i])
-    axes[i].set_title(f'Grafico de barras para {columna}')
     axes[i].set_ylabel('Frecuencia')
-    axes[i].set_xlabel('Categoria')
-    axes[i].tick_params(axis='x', rotation=45)  # Rotar las etiquetas para mejor legibilidad
+    axes[i].set_xlabel(columna)
+    
+    # Verificar la cantidad de etiquetas del eje X
+    if len(conteo) > 20:
+        # Si hay más de 20 etiquetas, ocultarlas
+        axes[i].set_xticklabels([])
+    else:
+        # Si hay 20 etiquetas o menos, rotarlas para mejor legibilidad
+        axes[i].tick_params(axis='x', rotation=45)
+
 
   # Ocultar los axes adicionales si el numero de columnas categoricas no llena la ultima fila
   for j in range(i+1, num_filas * num_col):
@@ -148,7 +157,6 @@ def describe1(df):
   plt.tight_layout()  # Ajustar automaticamente los parametros de la subtrama
   plt.show()
     
-
 def describe2(df):
   pd.set_option('display.float_format', lambda x: '%.3f' % x)
   oLista = []
