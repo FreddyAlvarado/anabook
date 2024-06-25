@@ -1,3 +1,7 @@
+# Programado por Freddy Alvarado - 2022/03/01
+# freddy.alvarado.b1@gmail.com
+#------------------------------------------------------------
+
 from scipy import stats
 from statistics import median
 import pandas as pd
@@ -7,10 +11,10 @@ import seaborn as sns
 import scipy.stats as stats
 import scipy.stats as scs
 
-# Funciones para el analisis exploratorio de datos
-# ------------------------------------------------
+#------------------------------------------------------------
+# FUCNIONES para el analisis exploratorio de datos
+#------------------------------------------------------------
 
-# función para el calculo de la curtosis y asimetria
 def simetria(column):
   kurt = 0.00
   skew = 0.00
@@ -70,7 +74,41 @@ def histograma(df):
 
   plt.tight_layout()
   plt.show()
+
+def dispersion_index(df):
   
+  nrows = len(df.columns)
+  npar = nrows%2
+  if (npar==1):
+    nrows+=1
+  nrows = nrows//2
+  nh = nrows * 3
+  ncols = len(df.columns)
+  
+  # Setting up the figure and axes
+  fig, axs = plt.subplots(nrows, 2, figsize=(8,nh))
+  plt.subplots_adjust(hspace=0.5,wspace=0.5)
+  
+  # Plotting data
+  columns = df.columns
+
+  for i, column_name in enumerate(columns):
+               
+      ax = axs[i//2, i%2]
+                  
+      row_index = i // ncols
+      col_index = i % ncols
+
+      ax.scatter(df.index, df[column_name])
+
+      ax.set_title(column_name)
+      # ax.set_xlabel('Index')
+      ax.set_ylabel('Value')    
+
+
+  plt.tight_layout()
+  plt.show() 
+ 
 def areaTrazadoBoxPlot(qcol):
   # Setea el area de dibujo
   nw = 0
@@ -109,9 +147,11 @@ def boxplot2(df, inputs):
     plt.subplots_adjust(hspace=0.15, wspace=1.25)
     plt.show()   
 
-#--------------------
+#------------------------------------------------------------
+# EDA
+#------------------------------------------------------------
 
-def describe1(df):
+def categorical(df):
   print('')
   print('GRAFICOS DE BARRAS')
   print('')
@@ -157,7 +197,11 @@ def describe1(df):
   plt.tight_layout()  # Ajustar automaticamente los parametros de la subtrama
   plt.show()
     
-def describe2(df):
+def continuos(df):
+  import warnings 
+  warnings.filterwarnings('ignore')
+  from tabulate import tabulate
+  
   pd.set_option('display.float_format', lambda x: '%.3f' % x)
   oLista = []
   oIndex = []
@@ -196,7 +240,7 @@ def describe2(df):
       describe['kurt']= '{:.5f}'.format(dk)
       describe['skew']= '{:.5f}'.format(ds)
       describe['test_stat']= '{:.5f}'.format(stat)
-      describe['p-value']= p
+      describe['p-value']= '{:.5f}'.format(p)
 
       # H0, muestra proviene de una dist normal
       # H1, nuestra NO  proviene de una dist normal
@@ -213,74 +257,44 @@ def describe2(df):
       #end for
 
   dfEstat = pd.DataFrame(oLista, index=oIndex)
-
+  
+  print('\033[1mANALISIS EXPLORATORIO DE DATOS PARA VARIABLES CONTINUAS\033[0m')
   print('')
-  print('ESTADISTICOS DESCRIPTIVOS UNIVARIADOS')
-  print('_____________________________________')
-  print(dfEstat.T)
+  print('\033[1mESTADISTICOS DESCRIPTIVOS UNIVARIADOS\033[0m')
+  table = tabulate(dfEstat.T, headers='keys', tablefmt='fancy_grid')
+  print(table)
   print('')
-  print('ANALISIS DE VALORES NULOS')
-  print('_____________________________________')
-  # print(df.info())
+  
+  print('\033[1mANALISIS DE VALORES NULOS\033[0m')
   df_info = pd.DataFrame({'type': df.dtypes,
                         'nulos': df.isnull().sum(),
                         'no_nulos': df.notnull().sum()})
-  print(df_info)
+  
+  table = tabulate(df_info, headers='keys', tablefmt='fancy_grid')
+  print(table)
 
   plt.rcParams['figure.figsize']=(4,3)
-
   # Mapa de Calor
   sns.heatmap(dfContinuo.isnull())
   plt.show()
 
   print('')
-  print('HISTOGRAMAS')
-  print('_____________________________________')
+  print('\033[1mHISTOGRAMAS\033[0m')
   histograma(df)
-
+  
   print('')
-  print('GRAFICOS BOXPLOT (variables continuas)')
-  print('___________________________________________')
+  print('\033[1mGRAFICOS BOXPLOT\033[0m')
   boxplot2(df, dfContinuo.columns)
 
   print('')
-  print('GRAFICOS XY')
-  print('___________')
+  print('\033[1mGRAFICOS DE DISPERSION\033[0m')
+  dispersion_index(df)
+
+  print('')
+  print('\033[1mGRAFICOS XY\033[0m')
   graficosxy(df)
-
   plt.show()
-
   plt.rcParams['figure.figsize']=(6,6)
-
-def mKOptimoMCodo(distortions):
-  first_point = (0, distortions[0])
-  last_point = (len(distortions) - 1, distortions[-1])
-  m = (last_point[1] - first_point[1]) / (last_point[0] - first_point[0])
-  intercept = first_point[1] - m * first_point[0]
-  distances = []
-  for i in range(len(distortions)):
-    point = (i, distortions[i])
-    distance = abs(m * point[0] + intercept - point[1]) / np.sqrt(m ** 2 + 1)
-    distances.append(distance)
-  max_distance_index = np.argmax(distances)
-
-  return max_distance_index + 1
-
-def mKOptimoMSilouette(X):
-  from sklearn.metrics import silhouette_score
-  from sklearn.cluster import AgglomerativeClustering
-
-  s = []
-  for n_clusters in range(2,20):
-    hc = AgglomerativeClustering(n_clusters = n_clusters, 
-                                affinity = 'euclidean', 
-                                linkage = 'ward')
-    s.append(silhouette_score(X,
-                                hc.fit_predict(X))) 
-  valor_maximo = max(s)
-  indice_maximo = s.index(valor_maximo) + 2
-  return indice_maximo
-
 
 #------------------------------------------------------------
 # ANALISIS BIVARIADO (solo variables numericas)
