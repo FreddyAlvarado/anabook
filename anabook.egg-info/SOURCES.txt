@@ -5,7 +5,8 @@ anabook/__init__.py
 anabook/ad.py
 anabook/clus.py
 anabook/eda.py
-anabook/edatest.py
+anabook/edatestCategorical.py
+anabook/edatestContinuos.py
 anabook.egg-info/PKG-INFO
 anabook.egg-info/SOURCES.txt
 anabook.egg-info/dependency_links.txt

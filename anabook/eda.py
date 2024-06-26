@@ -2,6 +2,7 @@
 # freddy.alvarado.b1@gmail.com
 #------------------------------------------------------------
 
+from operator import index
 from scipy import stats
 from statistics import median
 import pandas as pd
@@ -51,12 +52,10 @@ def histograma(df):
   for i, column in enumerate(columns):
                
         ax = axs[i//2, i%2]
-
         # Plot histogram and KDE
-        # Pasar, cuando no hay datos suficientes para el KDE
-        ax = sns.histplot(df[column], kde=True, ax=ax, color='skyblue', bins=15)
+        ax = sns.histplot(df[column], kde=True, ax=ax, color='#b5b5ff', bins=15, line_kws={'linewidth': 1})
         try:
-            ax.lines[0].set_color('gray')
+            ax.lines[0].set_color('darkblue')
         except:
             pass
             
@@ -152,14 +151,16 @@ def boxplot2(df, inputs):
 #------------------------------------------------------------
 
 def categorical(df):
-  print('')
-  print('GRAFICOS DE BARRAS')
-  print('')
+  
+  import warnings 
+  warnings.filterwarnings('ignore')
+  from tabulate import tabulate
 
-  # Variables string
   colCat = []
+  oIndex = []
+  
   for i in df.columns:
-    if (df[i].dtype !='float64'):
+    if (df[i].dtype !='float64' and df[i].dtype !='date'):
         colCat.append(i)      
 
   # Calculo del numero de filas necesario basado en el numero de columnas categoricas
@@ -172,6 +173,16 @@ def categorical(df):
   # Aplanar el array de axes para facilitar su uso en un loop
   axes = axes.flatten()
 
+  print('\033[1mMODA POR CATEGORIAS\033[0m')
+  dfModas = df[colCat].mode().T
+  dfModas['Moda'] = dfModas[0]
+  table = tabulate(dfModas['Moda'],  tablefmt='fancy_grid')
+  print(table)
+  print('')
+
+  print('\033[1mGRAFICOS DE BARRAS\033[0m')
+  print('')
+
   for i, columna in enumerate(colCat):
     # Contar la frecuencia de cada categoria en la columna actual
     conteo = df[columna].value_counts()
@@ -179,16 +190,16 @@ def categorical(df):
     # Crear el grafico de barras en el subplot correspondiente
     conteo.plot(kind='bar', ax=axes[i])
     axes[i].set_ylabel('Frecuencia')
-    axes[i].set_xlabel(columna)
+    axes[i].set_xlabel('')
+    axes[i].set_title(columna)
     
     # Verificar la cantidad de etiquetas del eje X
     if len(conteo) > 20:
-        # Si hay más de 20 etiquetas, ocultarlas
+        # Si hay mas de 20 etiquetas, ocultarlas porque se vuelve ilegible
         axes[i].set_xticklabels([])
     else:
         # Si hay 20 etiquetas o menos, rotarlas para mejor legibilidad
         axes[i].tick_params(axis='x', rotation=45)
-
 
   # Ocultar los axes adicionales si el numero de columnas categoricas no llena la ultima fila
   for j in range(i+1, num_filas * num_col):
@@ -207,54 +218,51 @@ def continuos(df):
   oIndex = []
   nCol = 0
   
-  # Variables float64
+  # Variables decimal o float
   colNum = []
   for i in df.columns:
-    if (df[i].dtype.kind in 'fi'):
+    if (df[i].dtype.kind in 'df'):
         colNum.append(i)
         
-  # Setea solo las columnas numericas
+  # Selecciona solo las columnas numericas
   df = df[colNum]
-
-  dfContinuo = pd.DataFrame()
 
   for i in df.columns:
 
-    if (df[i].dtype=='decimal' or df[i].dtype=='float'):
+    nCol +=1
+    describe = df[i].describe()
 
-      nCol +=1
-      dfContinuo[i] = df[i]
-      describe = df[i].describe()
-
-      for j in range(len(describe)):
+    for j in range(len(describe)):
         varNum = describe.iloc[j:j+1].values[0]
         describe[describe.index[j]] = '{:.5f}'.format(varNum)
 
-      dk = stats.kurtosis(df[i])
-      ds = stats.skew(df[i])
-      dmedian = median(df[i])
+    dk = stats.kurtosis(df[i])
+    ds = stats.skew(df[i])
+    dmedian = median(df[i])
 
-      stat, p = scs.normaltest(df[i])
+    stat, p = scs.normaltest(df[i])
 
-      describe['median']= '{:.5f}'.format(dmedian)
-      describe['kurt']= '{:.5f}'.format(dk)
-      describe['skew']= '{:.5f}'.format(ds)
-      describe['test_stat']= '{:.5f}'.format(stat)
-      describe['p-value']= '{:.5f}'.format(p)
+    describe['median']= '{:.5f}'.format(dmedian)
+    describe['kurt']= '{:.5f}'.format(dk)
+    describe['skew']= '{:.5f}'.format(ds)
+    describe['test_stat']= '{:.5f}'.format(stat)
+    describe['p-value']= '{:.5f}'.format(p)
 
-      # H0, muestra proviene de una dist normal
-      # H1, nuestra NO  proviene de una dist normal
-      if (float(p) < float(0.05)):
+    # H0, tiene dist normal
+    # H1, no tiene dist normal
+    if (float(p) < float(0.05)):
         # Se rechaza H0
-        describe['norm 5%']= 'no'
-      else:
+        describe['dist-norm']= 'no'
+    else:
         #Se acepta H0
-        describe['norm 5%']= 'si'
+        describe['dist-norm']= 'si'
 
-      oLista.append(describe)
+    oLista.append(describe)
       # Indices
-      oIndex.append(i)
-      #end for
+    oIndex.append(i)     
+    #end if  
+      
+   #end for
 
   dfEstat = pd.DataFrame(oLista, index=oIndex)
   
@@ -275,7 +283,7 @@ def continuos(df):
 
   plt.rcParams['figure.figsize']=(4,3)
   # Mapa de Calor
-  sns.heatmap(dfContinuo.isnull())
+  sns.heatmap(df.isnull())
   plt.show()
 
   print('')
@@ -284,7 +292,7 @@ def continuos(df):
   
   print('')
   print('\033[1mGRAFICOS BOXPLOT\033[0m')
-  boxplot2(df, dfContinuo.columns)
+  boxplot2(df, df.columns)
 
   print('')
   print('\033[1mGRAFICOS DE DISPERSION\033[0m')
