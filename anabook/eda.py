@@ -165,11 +165,11 @@ def categorical(df):
         colCat.append(i)      
 
   # Calculo del numero de filas necesario basado en el numero de columnas categoricas
-  num_col = 3  # Numero de columnas por fila en la grilla
+  num_col = 2  # Numero de columnas por fila en la grilla
   num_filas = np.ceil(len(colCat) / num_col).astype(int)
 
   # Crear una figura y un conjunto de subgraficos
-  fig, axes = plt.subplots(num_filas, num_col, figsize=(12, 3*num_filas))
+  fig, axes = plt.subplots(num_filas, num_col, figsize=(8, 3*num_filas))
 
   # Aplanar el array de axes para facilitar su uso en un loop
   axes = axes.flatten()
@@ -184,6 +184,7 @@ def categorical(df):
 
   print('\033[1mGRAFICOS DE BARRAS\033[0m')
   print('')
+  
 
   for i, columna in enumerate(colCat):
     # Contar la frecuencia de cada categoria en la columna actual
