@@ -22,7 +22,8 @@ class TestDescribe2(unittest.TestCase):
         df = pd.DataFrame(data)
         
         # Llamar a la función describe2
-        eda.continuos(df)
+        # eda.continuos(df)
+        eda.bivariado(df)
         
 
 if __name__ == '__main__':

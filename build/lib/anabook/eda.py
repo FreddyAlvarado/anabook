@@ -159,8 +159,9 @@ def categorical(df):
   colCat = []
   oIndex = []
   
+  # Se excluyen variables float y fecha en cualquier formato
   for i in df.columns:
-    if (df[i].dtype !='float64' and df[i].dtype !='date'):
+    if (df[i].dtype != 'float64' and not pd.api.types.is_datetime64_any_dtype(df[i])):
         colCat.append(i)      
 
   # Calculo del numero de filas necesario basado en el numero de columnas categoricas
@@ -173,6 +174,7 @@ def categorical(df):
   # Aplanar el array de axes para facilitar su uso en un loop
   axes = axes.flatten()
 
+  print('')
   print('\033[1mMODA POR CATEGORIAS\033[0m')
   dfModas = df[colCat].mode().T
   dfModas['Moda'] = dfModas[0]
@@ -319,14 +321,26 @@ def bivariado(df):
   # Setea solo las columnas numericas
   df = df[colNum]
 
-  print('  ANALISIS BIVARIADO  ')
-  print('  --------------------')
+  print('\033[1mANALISIS BIVARIADO\033[0m')
+  print('')
   dispersion(df)
   correlograma(df)
 
 def dispersion(df):
-  print('  GRAFICOS DE DISPERSION POR CADA PAR DE CAMPOS  ')
-  pairplot = sns.pairplot(df)
+  nrows = len(df.columns)
+  nDim =0
+  if (nrows<= 6 ):
+    nDim = 10
+  elif (nrows <= 12):
+    nDim = 16
+  else:
+    nDim = 20
+    
+  print('\033[1mGRAFICOS DE DISPERSION POR CADA PAR DE CAMPOS\033[0m')
+  # pairplot = sns.pairplot(df)  
+  pairplot = sns.pairplot(df, height=nDim/len(df.columns))
+  plt.gcf().set_size_inches(nDim, nDim)
+
   pairplot.fig.subplots_adjust(right=0.5, bottom=0.5)
   plt.show()
   
@@ -344,7 +358,8 @@ def correlograma(df):
     nw = 10
     nh = 8
 
-  print('  GRAFICO CORRELOGRAMA  ')
+  print('')
+  print('\033[1mGRAFICO CORRELOGRAMA\033[0m')
   plt.rcParams['figure.figsize'] = (nw, nh)
   # Correlograma
   df_corr = df.corr()
