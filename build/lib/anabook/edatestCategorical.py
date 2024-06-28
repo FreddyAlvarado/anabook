@@ -15,6 +15,7 @@ class TestCategorical(unittest.TestCase):
 
         # Definir las categorías posibles
         categories = ['A', 'B', 'C', 'D']
+        
 
         # Generar datos categóricos aleatorios
         data = []

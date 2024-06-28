@@ -42,6 +42,9 @@ def histograma(df):
   nrows = nrows//2
   nh = nrows * 3
   
+  if (nrows==1):
+     nrows += 1
+     
   # Setting up the figure and axes
   fig, axs = plt.subplots(nrows, 2, figsize=(8,nh))
   plt.subplots_adjust(hspace=0.5,wspace=0.3)
@@ -84,6 +87,9 @@ def dispersion_index(df):
   nh = nrows * 3
   ncols = len(df.columns)
   
+  if (nrows==1):
+     nrows += 1
+  
   # Setting up the figure and axes
   fig, axs = plt.subplots(nrows, 2, figsize=(8,nh))
   plt.subplots_adjust(hspace=0.5,wspace=0.5)
@@ -125,7 +131,6 @@ def areaTrazadoBoxPlot(qcol):
   plt.rcParams['figure.figsize']=(nw,nh)
   return (nw,nh)
   
-# inputs, lista de campos numericos
 def boxplot2(df, inputs):
     num_inputs = len(inputs)
     fig, axs = plt.subplots(1, num_inputs, figsize=areaTrazadoBoxPlot(num_inputs))
@@ -155,6 +160,10 @@ def categorical(df,varint=False):
   import warnings 
   warnings.filterwarnings('ignore')
   from tabulate import tabulate
+  
+  if df.shape[1] < 1:
+     print("El DataFrame debe tener al menos una variable.")
+     return
 
   colCat = []
   oIndex = []
@@ -243,6 +252,10 @@ def continuos(df, varint=False ):
   import warnings 
   warnings.filterwarnings('ignore')
   from tabulate import tabulate
+  
+  if df.shape[1] < 1:
+     print("El DataFrame debe tener al menos una variable.")
+     return
   
   pd.set_option('display.float_format', lambda x: '%.3f' % x)
   oLista = []
