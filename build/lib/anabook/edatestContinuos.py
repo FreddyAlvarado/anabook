@@ -16,14 +16,14 @@ class TestDescribe2(unittest.TestCase):
             'E': [11.0, 2.0, 3.0, 12.0, 1.0,1.0,1.0,1.0],
             'F': [11.0, 1.0, 1.0, 1.0, 5.0,1.0,1.0,1.0],
             'G': [11.0, 2.0, 23.0, 4.0, 13.0,1.0,1.0,1.0],
-            'H': [11.0, 10.0, 13.0, 10.0, 12.0,1.0,1.0,1.0]
+            'H': [11, 10, 13, 10, 12,1,1,1]
             
         }
         df = pd.DataFrame(data)
         
         # Llamar a la función describe2
-        # eda.continuos(df)
-        eda.bivariado(df)
+        eda.continuos(df,True)
+        # eda.bivariado(df)
         
 
 if __name__ == '__main__':

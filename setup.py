@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 setup(
     name="anabook",
-    version="1.21",
+    version="1.24",
     packages=find_packages(),
     description="Funciones para analisis descriptivo y utilitarios usados en el desarrollo de modelos de Aprendizaje Automatico",
     author="Freddy Alvarado",

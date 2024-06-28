@@ -24,7 +24,7 @@ class TestCategorical(unittest.TestCase):
         # Crear el DataFrame con los datos categóricos
         df = pd.DataFrame(data, columns=variable_names)
 
-        eda.categorical(df)
+        eda.categorical(df,True)
         
 
 if __name__ == '__main__':

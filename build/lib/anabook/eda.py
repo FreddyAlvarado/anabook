@@ -150,7 +150,7 @@ def boxplot2(df, inputs):
 # EDA
 #------------------------------------------------------------
 
-def categorical(df):
+def categorical(df,varint=False):
   
   import warnings 
   warnings.filterwarnings('ignore')
@@ -159,10 +159,20 @@ def categorical(df):
   colCat = []
   oIndex = []
   
-  # Se excluyen variables float y fecha en cualquier formato
-  for i in df.columns:
-    if (df[i].dtype != 'float64' and not pd.api.types.is_datetime64_any_dtype(df[i])):
-        colCat.append(i)      
+  # Sólo variables string o integer
+  
+  if (varint==True):
+      for i in df.columns:
+        if df[i].dtype.kind in {'O', 'i'}:
+            colCat.append(i)
+  else:
+     for i in df.columns:
+        if df[i].dtype.kind in 'O':
+            colCat.append(i)
+
+  # Convierte todas las variables a string
+  df = df[colCat]          
+  df = df.astype(str)
 
   # Calculo del numero de filas necesario basado en el numero de columnas categoricas
   num_col = 2  # Numero de columnas por fila en la grilla
@@ -173,45 +183,63 @@ def categorical(df):
 
   # Aplanar el array de axes para facilitar su uso en un loop
   axes = axes.flatten()
+ 
+  print('\033[1mANALISIS DE VALORES NULOS\033[0m')
+  df_info = pd.DataFrame({'type': df.dtypes,
+                        'nulos': df.isnull().sum(),
+                        'no_nulos': df.notnull().sum()})
+  table = tabulate(df_info, headers='keys', tablefmt='fancy_grid')
+  print(table)
+  print('') 
+  
 
   print('')
   print('\033[1mMODA POR CATEGORIAS\033[0m')
-  dfModas = df[colCat].mode().T
+  dfModas = df.mode().T
   dfModas['Moda'] = dfModas[0]
   table = tabulate(dfModas['Moda'],  tablefmt='fancy_grid')
   print(table)
-  print('')
+  print('') 
 
   print('\033[1mGRAFICOS DE BARRAS\033[0m')
   print('')
   
+  arrayFrecuencia = []
 
   for i, columna in enumerate(colCat):
     # Contar la frecuencia de cada categoria en la columna actual
-    conteo = df[columna].value_counts()
+    frecuencia = df[columna].value_counts()
+    arrayFrecuencia.append(frecuencia)
     
     # Crear el grafico de barras en el subplot correspondiente
-    conteo.plot(kind='bar', ax=axes[i])
+    frecuencia.plot(kind='bar', ax=axes[i])
     axes[i].set_ylabel('Frecuencia')
     axes[i].set_xlabel('')
     axes[i].set_title(columna)
     
     # Verificar la cantidad de etiquetas del eje X
-    if len(conteo) > 20:
-        # Si hay mas de 20 etiquetas, ocultarlas porque se vuelve ilegible
+    if len(frecuencia) > 18:
+        # Si hay mas de 18 etiquetas, ocultarlas porque se vuelve ilegible
         axes[i].set_xticklabels([])
     else:
-        # Si hay 20 etiquetas o menos, rotarlas para mejor legibilidad
+        # Si hay 18 etiquetas o menos, rotarlas para mejor legibilidad
         axes[i].tick_params(axis='x', rotation=45)
 
   # Ocultar los axes adicionales si el numero de columnas categoricas no llena la ultima fila
   for j in range(i+1, num_filas * num_col):
     fig.delaxes(axes[j])
-
+    
   plt.tight_layout()  # Ajustar automaticamente los parametros de la subtrama
   plt.show()
+  
+  print('\033[1mTABLAS DE DATOS\033[0m')
+  print('')
+  for i in arrayFrecuencia:
+    print(tabulate(i.to_frame(), headers='keys', tablefmt='fancy_grid'))
+    print('')
+
     
-def continuos(df):
+def continuos(df, varint=False ):
   import warnings 
   warnings.filterwarnings('ignore')
   from tabulate import tabulate
@@ -223,9 +251,17 @@ def continuos(df):
   
   # Variables decimal o float
   colNum = []
-  for i in df.columns:
-    if (df[i].dtype.kind in 'df'):
-        colNum.append(i)
+  
+  if (varint==True):
+      for i in df.columns:
+        # int, decimal o float
+        if (df[i].dtype.kind in 'idf'):
+            colNum.append(i)
+  else:
+      for i in df.columns:
+        # decimal o float
+        if (df[i].dtype.kind in 'df'):
+            colNum.append(i)
         
   # Selecciona solo las columnas numericas
   df = df[colNum]
