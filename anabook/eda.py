@@ -42,9 +42,7 @@ def histograma(df):
   nrows = nrows//2
   nh = nrows * 3
   
-  if (nrows==1):
-     nrows += 1
-     
+    
   # Setting up the figure and axes
   fig, axs = plt.subplots(nrows, 2, figsize=(8,nh))
   plt.subplots_adjust(hspace=0.5,wspace=0.3)
@@ -53,8 +51,12 @@ def histograma(df):
   columns = df.columns
 
   for i, column in enumerate(columns):
-               
-        ax = axs[i//2, i%2]
+        
+        if(nrows==1):
+           ax = axs[i]
+        else:
+           ax = axs[i//2, i%2]
+        
         # Plot histogram and KDE
         ax = sns.histplot(df[column], kde=True, ax=ax, color='#b5b5ff', bins=15, line_kws={'linewidth': 1})
         try:
@@ -86,10 +88,7 @@ def dispersion_index(df):
   nrows = nrows//2
   nh = nrows * 3
   ncols = len(df.columns)
-  
-  if (nrows==1):
-     nrows += 1
-  
+   
   # Setting up the figure and axes
   fig, axs = plt.subplots(nrows, 2, figsize=(8,nh))
   plt.subplots_adjust(hspace=0.5,wspace=0.5)
@@ -99,7 +98,10 @@ def dispersion_index(df):
 
   for i, column_name in enumerate(columns):
                
-      ax = axs[i//2, i%2]
+      if(nrows==1):
+           ax = axs[i]
+      else:
+           ax = axs[i//2, i%2]
                   
       row_index = i // ncols
       col_index = i % ncols
@@ -118,20 +120,26 @@ def areaTrazadoBoxPlot(qcol):
   # Setea el area de dibujo
   nw = 0
   nh = 0
-  if (qcol<=2):
-    nw= 3
+  if (qcol==1):
+     nw= 1.5
+     nh= 4.5       
+  elif (qcol > 1 and qcol<=3):
+    nw= 3.5
     nh= 6
-  elif (qcol > 2 and qcol<=4):
+  elif (qcol > 3 and qcol<=5):
     nw= 8
     nh= 6
-  elif (qcol > 4):
+  elif (qcol > 5 and qcol<=8):
     nw= 14
     nh= 6
+  elif (qcol > 8):
+    nw= 18
+    nh= 8
 
   plt.rcParams['figure.figsize']=(nw,nh)
   return (nw,nh)
   
-def boxplot2(df, inputs):
+def boxplot(df, inputs):
     num_inputs = len(inputs)
     fig, axs = plt.subplots(1, num_inputs, figsize=areaTrazadoBoxPlot(num_inputs))
     axs = np.array(axs)
@@ -246,8 +254,7 @@ def categorical(df,varint=False):
   for i in arrayFrecuencia:
     print(tabulate(i.to_frame(), headers='keys', tablefmt='fancy_grid'))
     print('')
-
-    
+  
 def continuos(df, varint=False ):
   import warnings 
   warnings.filterwarnings('ignore')
@@ -344,7 +351,7 @@ def continuos(df, varint=False ):
   
   print('')
   print('\033[1mGRAFICOS BOXPLOT\033[0m')
-  boxplot2(df, df.columns)
+  boxplot(df, df.columns)
 
   print('')
   print('\033[1mGRAFICOS DE DISPERSION\033[0m')
