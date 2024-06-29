@@ -16,14 +16,16 @@ import scipy.stats as scs
 # FUCNIONES para el analisis exploratorio de datos
 #------------------------------------------------------------
 
-def simetria(column):
+# Hacer este método privado
+
+def __simetria(column):
   kurt = 0.00
   skew = 0.00
   kurt = stats.kurtosis(column)
   skew = stats.skew(column)
   return kurt, skew
 
-def graficosxy(df):
+def __graficosxy(df):
   df.plot(
       kind='line',
       subplots=True,
@@ -33,7 +35,7 @@ def graficosxy(df):
   plt.tight_layout()
   plt.show()
   
-def histograma(df):
+def __histograma(df):
   
   nrows = len(df.columns)
   npar = nrows%2
@@ -79,7 +81,7 @@ def histograma(df):
   plt.tight_layout()
   plt.show()
 
-def dispersion_index(df):
+def __dispersion_index(df):
   
   nrows = len(df.columns)
   npar = nrows%2
@@ -116,7 +118,7 @@ def dispersion_index(df):
   plt.tight_layout()
   plt.show() 
  
-def areaTrazadoBoxPlot(qcol):
+def __areaTrazadoBoxPlot(qcol):
   # Setea el area de dibujo
   nw = 0
   nh = 0
@@ -139,10 +141,16 @@ def areaTrazadoBoxPlot(qcol):
   plt.rcParams['figure.figsize']=(nw,nh)
   return (nw,nh)
   
-def boxplot(df, inputs):
+def __boxplot(df, inputs):
     num_inputs = len(inputs)
-    fig, axs = plt.subplots(1, num_inputs, figsize=areaTrazadoBoxPlot(num_inputs))
-    axs = np.array(axs)
+    fig, axs = plt.subplots(1, num_inputs, figsize=__areaTrazadoBoxPlot(num_inputs))
+    axs = np.array(axs)   
+    len_mayor_longitud = len(max(inputs, key=len))
+    rotar=False
+    
+    if (len_mayor_longitud>=12):
+        rotar=True
+    
     for i, (ax, curve) in enumerate(zip(axs.flat, inputs), 1):
         sns.boxplot(y=df[curve], ax=ax, color='cornflowerblue', showmeans=True,
                 meanprops={"marker":"o",
@@ -152,8 +160,10 @@ def boxplot(df, inputs):
                flierprops={'marker':'o',
                           'markerfacecolor':'darkgreen',
                           'markeredgecolor':'darkgreen'})
-
-        ax.set_title(inputs[i-1])
+        if(rotar):
+          ax.set_title(inputs[i-1], rotation=15)
+        else:
+           ax.set_title(inputs[i-1])
         ax.set_ylabel('')
 
     plt.subplots_adjust(hspace=0.15, wspace=1.25)
@@ -168,6 +178,7 @@ def categorical(df,varint=False):
   import warnings 
   warnings.filterwarnings('ignore')
   from tabulate import tabulate
+  from datetime import datetime
   
   if df.shape[1] < 1:
      print("El DataFrame debe tener al menos una variable.")
@@ -222,12 +233,17 @@ def categorical(df,varint=False):
   print('')
   
   arrayFrecuencia = []
+  tofile = False
+  nRows = 0
 
   for i, columna in enumerate(colCat):
     # Contar la frecuencia de cada categoria en la columna actual
     frecuencia = df[columna].value_counts()
     arrayFrecuencia.append(frecuencia)
     
+    # nRows debe ser igual al numero de filas de frecuencia
+    nRows += len(frecuencia)
+
     # Crear el grafico de barras en el subplot correspondiente
     frecuencia.plot(kind='bar', ax=axes[i])
     axes[i].set_ylabel('Frecuencia')
@@ -249,11 +265,27 @@ def categorical(df,varint=False):
   plt.tight_layout()  # Ajustar automaticamente los parametros de la subtrama
   plt.show()
   
+  print('')
   print('\033[1mTABLAS DE DATOS\033[0m')
   print('')
-  for i in arrayFrecuencia:
-    print(tabulate(i.to_frame(), headers='keys', tablefmt='fancy_grid'))
-    print('')
+  
+  if (nRows>=500):
+     tofile = True
+     
+  if not(tofile):
+     for i in arrayFrecuencia:
+        print(tabulate(i.to_frame(), headers='keys', tablefmt='fancy_grid'))
+        print('')
+  else:    
+     nombre_archivo = datetime.now().strftime("%Y%m%d_%H%M%S%f") + '.txt'  
+     print('Se obtuvieron Tablas extensas, los resultados se guardaron en el archivo: ', nombre_archivo)
+     with open(nombre_archivo, 'w') as f:
+        for i in arrayFrecuencia:
+           f.write('\n')
+           f.write(tabulate(i.to_frame(), headers='keys', tablefmt='simple'))
+           f.write('\n')
+     print('')
+     
   
 def continuos(df, varint=False ):
   import warnings 
@@ -347,19 +379,19 @@ def continuos(df, varint=False ):
 
   print('')
   print('\033[1mHISTOGRAMAS\033[0m')
-  histograma(df)
+  __histograma(df)
   
   print('')
   print('\033[1mGRAFICOS BOXPLOT\033[0m')
-  boxplot(df, df.columns)
+  __boxplot(df, df.columns)
 
   print('')
   print('\033[1mGRAFICOS DE DISPERSION\033[0m')
-  dispersion_index(df)
+  __dispersion_index(df)
 
   print('')
   print('\033[1mGRAFICOS XY\033[0m')
-  graficosxy(df)
+  __graficosxy(df)
   plt.show()
   plt.rcParams['figure.figsize']=(6,6)
 
